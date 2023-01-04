@@ -7,6 +7,7 @@ const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 };
 
+// Register User
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -85,17 +86,17 @@ const loginUser = asyncHandler(async (req, res) => {
   // Check if password is correct
   const passwordIsCorrect = await bcrypt.compare(password, user.password);
 
-    // Generate token
-    const token = generateToken(user._id);
+  // Generate token
+  const token = generateToken(user._id);
 
-    // Send HTTP-only cookie
-    res.cookie("token", token, {
-      path: "/",
-      httpOnly: true,
-      expires: new Date(Date.now() + 1000 * 86400), // 1 day
-      sameSite: "none",
-      secure: true,
-    });
+  // Send HTTP-only cookie
+  res.cookie("token", token, {
+    path: "/",
+    httpOnly: true,
+    expires: new Date(Date.now() + 1000 * 86400), // 1 day
+    sameSite: "none",
+    secure: true,
+  });
 
   if (user && passwordIsCorrect) {
     const { _id, name, email, photo, phone, bio } = user;
@@ -106,50 +107,56 @@ const loginUser = asyncHandler(async (req, res) => {
       photo,
       phone,
       bio,
-      token
+      token,
     });
   } else {
     res.status(400);
     throw new Error("Invalid email or password");
   }
 });
+
 // Logout User
-const logout = asyncHandler(async(req,res) => {
-    res.cookie("token", "", {
-        path: "/",
-        httpOnly: true,
-        expires: new Date(0),
-        sameSite: "none",
-        secure: true,
-      });
-
-      res.status(200).json({message: "You successfully logged out"})
-})
-
-//Get User Data
-const getUser = asyncHandler(async(req,res) => {
-    const user = await User.findById(req.user._id);
-
-    if (user) {
-      const { _id, name, email, photo, phone, bio } = user;
-      res.status(201).json({
-        _id,
-        name,
-        email,
-        photo,
-        phone,
-        bio,
-      });
-    } else {
-      res.status(400);
-      throw new Error("Invalid user data");
-    }
+const logout = asyncHandler(async (req, res) => {
+  res.cookie("token", "", {
+    path: "/",
+    httpOnly: true,
+    expires: new Date(0),
+    sameSite: "none",
+    secure: true,
   });
 
+  res.status(200).json({ message: "You successfully logged out" });
+});
+
+//Get User Data
+const getUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    const { _id, name, email, photo, phone, bio } = user;
+    res.status(201).json({
+      _id,
+      name,
+      email,
+      photo,
+      phone,
+      bio,
+    });
+  } else {
+    res.status(400);
+    throw new Error("Invalid user data");
+  }
+});
+
+// Get Login Status
+const loginStatus = asyncHandler(async (req, res) => {
+  res.send("Login Status Bliad");
+});
 
 module.exports = {
   registerUser,
   loginUser,
   logout,
-  getUser
+  getUser,
+  loginStatus,
 };
